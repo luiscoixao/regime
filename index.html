@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2a9d8f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Mon Régime" />
+  <meta name="description" content="Suivi alimentaire quotidien sur iPhone : aliments, calories, sport et poids." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="icon" type="image/png" href="icon-180.png" />
+  <title>Mon Régime</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Suivi alimentaire</p>
+        <h1>Mon Régime</h1>
+      </div>
+      <button id="todayBtn" class="ghost-btn" type="button">Aujourd’hui</button>
+    </header>
+
+    <main class="content">
+      <section class="card hero-card">
+        <div class="date-row">
+          <label for="selectedDate">Date</label>
+          <input id="selectedDate" type="date" />
+        </div>
+        <div class="summary-grid" id="summaryCards"></div>
+        <div class="nutrition-box" id="nutritionSummary"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Aliments mangés</h2>
+          <span class="pill">Calories consommées</span>
+        </div>
+        <form id="foodForm" class="stack-form">
+          <input id="foodName" type="text" placeholder="Aliment" required />
+          <div class="grid-2">
+            <input id="foodQty" type="text" placeholder="Quantité (ex. 150 g)" required />
+            <input id="foodCalories" type="number" min="0" step="1" placeholder="Calories" required />
+          </div>
+          <button type="submit" class="primary-btn">Ajouter l’aliment</button>
+        </form>
+        <div id="foodList" class="entry-list empty-state">Aucun aliment enregistré.</div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Sport</h2>
+          <span class="pill">Calories dépensées</span>
+        </div>
+        <form id="sportForm" class="stack-form">
+          <input id="sportName" type="text" placeholder="Activité sportive" required />
+          <div class="grid-2">
+            <input id="sportDuration" type="text" placeholder="Durée (ex. 45 min)" required />
+            <input id="sportCalories" type="number" min="0" step="1" placeholder="Calories dépensées" required />
+          </div>
+          <button type="submit" class="primary-btn">Ajouter l’activité</button>
+        </form>
+        <div id="sportList" class="entry-list empty-state">Aucune activité enregistrée.</div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Poids du jour</h2>
+          <span class="pill">Suivi journalier</span>
+        </div>
+        <form id="weightForm" class="stack-form inline-form">
+          <input id="weightValue" type="number" min="0" step="0.1" placeholder="Poids (kg)" required />
+          <button type="submit" class="primary-btn">Enregistrer</button>
+        </form>
+        <div id="weightDisplay" class="weight-display">Aucun poids enregistré.</div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Historique récent</h2>
+          <span class="pill">7 derniers jours</span>
+        </div>
+        <div id="historyList" class="history-list empty-state">Aucune donnée enregistrée.</div>
+      </section>
+
+      <section class="card tools-card">
+        <div class="section-head">
+          <h2>Sauvegarde</h2>
+          <span class="pill">Local + export</span>
+        </div>
+        <div class="tool-actions">
+          <button id="exportBtn" type="button" class="secondary-btn">Exporter en JSON</button>
+          <label class="secondary-btn file-label">
+            Importer JSON
+            <input id="importInput" type="file" accept="application/json" hidden />
+          </label>
+          <button id="resetBtn" type="button" class="danger-btn">Tout effacer</button>
+        </div>
+        <p class="hint">Les données restent enregistrées sur l’iPhone grâce au stockage local du navigateur.</p>
+      </section>
+    </main>
+  </div>
+
+  <template id="entryTemplate">
+    <div class="entry-item">
+      <div class="entry-text"></div>
+      <button class="icon-btn delete-btn" type="button" aria-label="Supprimer">🗑️</button>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
