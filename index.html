@@ -55,16 +55,6 @@
       font-weight: 800;
     }
 
-    .today-banner {
-      background: #edf3f5;
-      border-radius: 24px;
-      padding: 18px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 18px;
-    }
-
     .card {
       background: var(--card);
       border-radius: 24px;
@@ -76,11 +66,7 @@
 
     .card h2 {
       margin: 0 0 14px;
-      font-size: 19px;
-    }
-
-    .field-group {
-      margin-bottom: 14px;
+      font-size: 20px;
     }
 
     label {
@@ -111,14 +97,34 @@
       background: #fff;
     }
 
-    .date-field {
+    input[type="date"] {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      font-size: 17px;
+    }
+
+    .top-date {
+      display: grid;
+      gap: 12px;
+    }
+
+    .selected-date {
+      background: #eef4f6;
+      border-radius: 18px;
+      padding: 16px;
       text-align: center;
     }
 
-    .muted {
+    .selected-date-label {
       color: var(--muted);
       font-size: 13px;
-      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+
+    .selected-date-value {
+      font-size: 24px;
+      font-weight: 800;
     }
 
     .stats {
@@ -144,6 +150,10 @@
       font-size: 26px;
       font-weight: 800;
       line-height: 1.1;
+    }
+
+    .field-group {
+      margin-bottom: 14px;
     }
 
     .button {
@@ -254,12 +264,20 @@
   <div class="subtitle">Suivi alimentaire</div>
   <h1>Mon Régime</h1>
 
-  <div class="today-banner">Aujourd’hui</div>
-
   <div class="card">
-    <h2>Date</h2>
-    <input id="dateInput" class="date-field" type="text" placeholder="15/03/2026" />
-    <div class="muted">Format : jj/mm/aaaa</div>
+    <h2>Calendrier</h2>
+
+    <div class="top-date">
+      <div>
+        <label for="calendarInput">Choisir une date</label>
+        <input id="calendarInput" type="date" />
+      </div>
+
+      <div class="selected-date">
+        <div class="selected-date-label">Jour sélectionné</div>
+        <div class="selected-date-value" id="selectedDateLabel"></div>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -304,7 +322,7 @@
       <input id="foodCaloriesInput" type="number" inputmode="decimal" placeholder="Ex. 90" />
     </div>
 
-    <button class="button" id="addFoodBtn">Ajouter aliment</button>
+    <button class="button" id="addFoodBtn">Ajouter aliment à cette date</button>
   </div>
 
   <div class="card">
@@ -320,7 +338,7 @@
       <input id="sportCaloriesInput" type="number" inputmode="decimal" placeholder="Ex. 250" />
     </div>
 
-    <button class="button" id="addSportBtn">Ajouter activité</button>
+    <button class="button" id="addSportBtn">Ajouter activité à cette date</button>
   </div>
 
   <div class="card">
@@ -332,18 +350,18 @@
     </div>
 
     <div class="button-row">
-      <button class="button" id="saveWeightBtn">Enregistrer poids</button>
-      <button class="button secondary" id="deleteWeightBtn">Supprimer poids</button>
+      <button class="button" id="saveWeightBtn">Enregistrer</button>
+      <button class="button secondary" id="deleteWeightBtn">Supprimer</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>Détail consommé aujourd’hui</h2>
+    <h2>Aliments du jour sélectionné</h2>
     <div id="foodList" class="list"></div>
   </div>
 
   <div class="card">
-    <h2>Détail activité aujourd’hui</h2>
+    <h2>Activités du jour sélectionné</h2>
     <div id="sportList" class="list"></div>
   </div>
 
@@ -353,16 +371,20 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "mon_regime_data_v2";
+    const STORAGE_KEY = "mon_regime_data_v3";
 
     const appData = loadData();
 
-    const dateInput = document.getElementById("dateInput");
+    const calendarInput = document.getElementById("calendarInput");
+    const selectedDateLabel = document.getElementById("selectedDateLabel");
+
     const foodInput = document.getElementById("foodInput");
     const quantityInput = document.getElementById("quantityInput");
     const foodCaloriesInput = document.getElementById("foodCaloriesInput");
+
     const sportInput = document.getElementById("sportInput");
     const sportCaloriesInput = document.getElementById("sportCaloriesInput");
+
     const weightInput = document.getElementById("weightInput");
 
     const caloriesInEl = document.getElementById("caloriesIn");
@@ -376,15 +398,11 @@
     function loadData() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-          return { days: {} };
-        }
+        if (!raw) return { days: {} };
         const parsed = JSON.parse(raw);
-        if (!parsed.days || typeof parsed.days !== "object") {
-          return { days: {} };
-        }
+        if (!parsed.days || typeof parsed.days !== "object") return { days: {} };
         return parsed;
-      } catch (e) {
+      } catch {
         return { days: {} };
       }
     }
@@ -393,56 +411,48 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
 
-    function formatTodayFR() {
+    function todayISO() {
       const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
+      return `${y}-${m}-${day}`;
     }
 
-    function normalizeDate(value) {
-      if (!value) return "";
-      let v = value.trim().replaceAll("-", "/").replaceAll(".", "/");
-
-      const match = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (!match) return "";
-
-      const day = String(parseInt(match[1], 10)).padStart(2, "0");
-      const month = String(parseInt(match[2], 10)).padStart(2, "0");
-      const year = match[3];
-
-      const d = new Date(`${year}-${month}-${day}T00:00:00`);
-      if (
-        Number.isNaN(d.getTime()) ||
-        d.getDate() !== parseInt(day, 10) ||
-        d.getMonth() + 1 !== parseInt(month, 10) ||
-        d.getFullYear() !== parseInt(year, 10)
-      ) {
-        return "";
-      }
-
-      return `${day}/${month}/${year}`;
+    function isoToFR(iso) {
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-");
+      return `${d}/${m}/${y}`;
     }
 
-    function ensureDay(date) {
-      if (!appData.days[date]) {
-        appData.days[date] = {
+    function isoToPrettyFR(iso) {
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-");
+      const date = new Date(Number(y), Number(m) - 1, Number(d));
+      return date.toLocaleDateString("fr-FR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function ensureDay(isoDate) {
+      if (!appData.days[isoDate]) {
+        appData.days[isoDate] = {
           foods: [],
           sports: [],
           weight: null
         };
       }
-      return appData.days[date];
+      return appData.days[isoDate];
     }
 
-    function currentDate() {
-      const normalized = normalizeDate(dateInput.value);
-      if (normalized) return normalized;
-
-      const today = formatTodayFR();
-      dateInput.value = today;
-      return today;
+    function currentDateISO() {
+      if (!calendarInput.value) {
+        calendarInput.value = todayISO();
+      }
+      return calendarInput.value;
     }
 
     function totalFoodCalories(day) {
@@ -463,8 +473,10 @@
     }
 
     function render() {
-      const date = currentDate();
-      const day = ensureDay(date);
+      const iso = currentDateISO();
+      const day = ensureDay(iso);
+
+      selectedDateLabel.textContent = isoToPrettyFR(iso);
 
       const caloriesIn = totalFoodCalories(day);
       const caloriesOut = totalSportCalories(day);
@@ -475,15 +487,16 @@
       balanceEl.textContent = `${balance} kcal`;
       weightDisplayEl.textContent = day.weight ? `${day.weight} kg` : "—";
 
-      renderFoodList(day, date);
-      renderSportList(day, date);
+      renderFoodList(day, iso);
+      renderSportList(day, iso);
       renderWeightHistory();
+
       saveData();
     }
 
-    function renderFoodList(day, date) {
+    function renderFoodList(day, iso) {
       if (!day.foods.length) {
-        foodListEl.innerHTML = `<div class="empty">Aucune donnée aujourd’hui. Commence par ajouter un aliment.</div>`;
+        foodListEl.innerHTML = `<div class="empty">Aucun aliment enregistré pour cette date.</div>`;
         return;
       }
 
@@ -496,14 +509,14 @@
             </div>
             <div class="item-value">${Number(item.calories)} kcal</div>
           </div>
-          <button class="delete-btn" onclick="deleteFood('${date}', ${index})">Supprimer</button>
+          <button class="delete-btn" onclick="deleteFood('${iso}', ${index})">Supprimer</button>
         </div>
       `).join("");
     }
 
-    function renderSportList(day, date) {
+    function renderSportList(day, iso) {
       if (!day.sports.length) {
-        sportListEl.innerHTML = `<div class="empty">Aucune activité enregistrée aujourd’hui.</div>`;
+        sportListEl.innerHTML = `<div class="empty">Aucune activité enregistrée pour cette date.</div>`;
         return;
       }
 
@@ -512,11 +525,11 @@
           <div class="list-top">
             <div>
               <div class="item-title">${escapeHtml(item.name)}</div>
-              <div class="item-meta">Activité enregistrée</div>
+              <div class="item-meta">Activité enregistrée le ${escapeHtml(isoToFR(iso))}</div>
             </div>
             <div class="item-value">${Number(item.calories)} kcal</div>
           </div>
-          <button class="delete-btn" onclick="deleteSport('${date}', ${index})">Supprimer</button>
+          <button class="delete-btn" onclick="deleteSport('${iso}', ${index})">Supprimer</button>
         </div>
       `).join("");
     }
@@ -524,30 +537,24 @@
     function renderWeightHistory() {
       const entries = Object.entries(appData.days)
         .filter(([_, day]) => day.weight !== null && day.weight !== "" && day.weight !== undefined)
-        .sort((a, b) => {
-          const [da, ma, ya] = a[0].split("/");
-          const [db, mb, yb] = b[0].split("/");
-          const ta = new Date(`${ya}-${ma}-${da}`).getTime();
-          const tb = new Date(`${yb}-${mb}-${db}`).getTime();
-          return tb - ta;
-        });
+        .sort((a, b) => b[0].localeCompare(a[0]));
 
       if (!entries.length) {
         weightHistoryEl.innerHTML = `<div class="empty">Aucun poids enregistré pour le moment.</div>`;
         return;
       }
 
-      weightHistoryEl.innerHTML = entries.map(([date, day]) => `
+      weightHistoryEl.innerHTML = entries.map(([iso, day]) => `
         <div class="history-item">
-          <div class="history-date">${escapeHtml(date)}</div>
+          <div class="history-date">${escapeHtml(isoToFR(iso))}</div>
           <div class="history-weight">${escapeHtml(String(day.weight))} kg</div>
         </div>
       `).join("");
     }
 
     function addFood() {
-      const date = currentDate();
-      const day = ensureDay(date);
+      const iso = currentDateISO();
+      const day = ensureDay(iso);
 
       const name = foodInput.value.trim();
       const quantity = quantityInput.value.trim();
@@ -558,11 +565,7 @@
         return;
       }
 
-      day.foods.push({
-        name,
-        quantity,
-        calories
-      });
+      day.foods.push({ name, quantity, calories });
 
       foodInput.value = "";
       quantityInput.value = "";
@@ -571,8 +574,8 @@
     }
 
     function addSport() {
-      const date = currentDate();
-      const day = ensureDay(date);
+      const iso = currentDateISO();
+      const day = ensureDay(iso);
 
       const name = sportInput.value.trim();
       const calories = Number(sportCaloriesInput.value);
@@ -582,10 +585,7 @@
         return;
       }
 
-      day.sports.push({
-        name,
-        calories
-      });
+      day.sports.push({ name, calories });
 
       sportInput.value = "";
       sportCaloriesInput.value = "";
@@ -593,11 +593,10 @@
     }
 
     function saveWeight() {
-      const date = currentDate();
-      const day = ensureDay(date);
+      const iso = currentDateISO();
+      const day = ensureDay(iso);
 
       const weight = weightInput.value.trim();
-
       if (!weight) {
         alert("Entre un poids.");
         return;
@@ -609,20 +608,20 @@
     }
 
     function deleteWeight() {
-      const date = currentDate();
-      const day = ensureDay(date);
+      const iso = currentDateISO();
+      const day = ensureDay(iso);
       day.weight = null;
       render();
     }
 
-    function deleteFood(date, index) {
-      const day = ensureDay(date);
+    function deleteFood(iso, index) {
+      const day = ensureDay(iso);
       day.foods.splice(index, 1);
       render();
     }
 
-    function deleteSport(date, index) {
-      const day = ensureDay(date);
+    function deleteSport(iso, index) {
+      const day = ensureDay(iso);
       day.sports.splice(index, 1);
       render();
     }
@@ -635,18 +634,9 @@
     document.getElementById("saveWeightBtn").addEventListener("click", saveWeight);
     document.getElementById("deleteWeightBtn").addEventListener("click", deleteWeight);
 
-    dateInput.addEventListener("blur", () => {
-      const normalized = normalizeDate(dateInput.value);
-      if (normalized) {
-        dateInput.value = normalized;
-        render();
-      } else {
-        dateInput.value = formatTodayFR();
-        render();
-      }
-    });
+    calendarInput.addEventListener("change", render);
 
-    dateInput.value = formatTodayFR();
+    calendarInput.value = todayISO();
     render();
   </script>
 </body>
