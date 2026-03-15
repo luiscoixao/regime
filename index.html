@@ -1,116 +1,219 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#2a9d8f" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Mon Régime" />
-  <meta name="description" content="Suivi alimentaire quotidien sur iPhone : aliments, calories, sport et poids." />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="icon-180.png" />
-  <link rel="icon" type="image/png" href="icon-180.png" />
-  <title>Mon Régime</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Régime</title>
+
+<style>
+
+body{
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+background:#f2f4f5;
+margin:0;
+padding:20px;
+color:#1d2b34;
+}
+
+h1{
+font-size:34px;
+margin-bottom:5px;
+}
+
+.subtitle{
+color:#7b8b94;
+letter-spacing:2px;
+font-size:12px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:16px;
+margin-top:20px;
+box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+label{
+font-weight:600;
+display:block;
+margin-bottom:6px;
+}
+
+input{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:1px solid #e2e5e7;
+font-size:16px;
+box-sizing:border-box;
+}
+
+input[type="date"]{
+width:100%;
+box-sizing:border-box;
+}
+
+button{
+margin-top:10px;
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:#163642;
+color:white;
+font-size:16px;
+font-weight:600;
+}
+
+.stats{
+display:grid;
+grid-template-columns:1fr;
+gap:12px;
+margin-top:20px;
+}
+
+.stat{
+background:#f4f6f7;
+padding:16px;
+border-radius:12px;
+}
+
+.stat-title{
+font-size:14px;
+color:#7b8b94;
+}
+
+.stat-value{
+font-size:22px;
+font-weight:700;
+margin-top:4px;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Suivi alimentaire</p>
-        <h1>Mon Régime</h1>
-      </div>
-      <button id="todayBtn" class="ghost-btn" type="button">Aujourd’hui</button>
-    </header>
 
-    <main class="content">
-      <section class="card hero-card">
-        <div class="date-row">
-          <label for="selectedDate">Date</label>
-          <input id="selectedDate" type="date" />
-        </div>
-        <div class="summary-grid" id="summaryCards"></div>
-        <div class="nutrition-box" id="nutritionSummary"></div>
-      </section>
+<div class="subtitle">SUIVI ALIMENTAIRE</div>
+<h1>Mon Régime</h1>
 
-      <section class="card">
-        <div class="section-head">
-          <h2>Aliments mangés</h2>
-          <span class="pill">Calories consommées</span>
-        </div>
-        <form id="foodForm" class="stack-form">
-          <input id="foodName" type="text" placeholder="Aliment" required />
-          <div class="grid-2">
-            <input id="foodQty" type="text" placeholder="Quantité (ex. 150 g)" required />
-            <input id="foodCalories" type="number" min="0" step="1" placeholder="Calories" required />
-          </div>
-          <button type="submit" class="primary-btn">Ajouter l’aliment</button>
-        </form>
-        <div id="foodList" class="entry-list empty-state">Aucun aliment enregistré.</div>
-      </section>
+<div class="card">
 
-      <section class="card">
-        <div class="section-head">
-          <h2>Sport</h2>
-          <span class="pill">Calories dépensées</span>
-        </div>
-        <form id="sportForm" class="stack-form">
-          <input id="sportName" type="text" placeholder="Activité sportive" required />
-          <div class="grid-2">
-            <input id="sportDuration" type="text" placeholder="Durée (ex. 45 min)" required />
-            <input id="sportCalories" type="number" min="0" step="1" placeholder="Calories dépensées" required />
-          </div>
-          <button type="submit" class="primary-btn">Ajouter l’activité</button>
-        </form>
-        <div id="sportList" class="entry-list empty-state">Aucune activité enregistrée.</div>
-      </section>
+<label>Date</label>
+<input type="date" id="date">
 
-      <section class="card">
-        <div class="section-head">
-          <h2>Poids du jour</h2>
-          <span class="pill">Suivi journalier</span>
-        </div>
-        <form id="weightForm" class="stack-form inline-form">
-          <input id="weightValue" type="number" min="0" step="0.1" placeholder="Poids (kg)" required />
-          <button type="submit" class="primary-btn">Enregistrer</button>
-        </form>
-        <div id="weightDisplay" class="weight-display">Aucun poids enregistré.</div>
-      </section>
+</div>
 
-      <section class="card">
-        <div class="section-head">
-          <h2>Historique récent</h2>
-          <span class="pill">7 derniers jours</span>
-        </div>
-        <div id="historyList" class="history-list empty-state">Aucune donnée enregistrée.</div>
-      </section>
+<div class="stats">
 
-      <section class="card tools-card">
-        <div class="section-head">
-          <h2>Sauvegarde</h2>
-          <span class="pill">Local + export</span>
-        </div>
-        <div class="tool-actions">
-          <button id="exportBtn" type="button" class="secondary-btn">Exporter en JSON</button>
-          <label class="secondary-btn file-label">
-            Importer JSON
-            <input id="importInput" type="file" accept="application/json" hidden />
-          </label>
-          <button id="resetBtn" type="button" class="danger-btn">Tout effacer</button>
-        </div>
-        <p class="hint">Les données restent enregistrées sur l’iPhone grâce au stockage local du navigateur.</p>
-      </section>
-    </main>
-  </div>
+<div class="stat">
+<div class="stat-title">Calories consommées</div>
+<div class="stat-value" id="caloriesIn">0 kcal</div>
+</div>
 
-  <template id="entryTemplate">
-    <div class="entry-item">
-      <div class="entry-text"></div>
-      <button class="icon-btn delete-btn" type="button" aria-label="Supprimer">🗑️</button>
-    </div>
-  </template>
+<div class="stat">
+<div class="stat-title">Calories dépensées</div>
+<div class="stat-value" id="caloriesOut">0 kcal</div>
+</div>
 
-  <script src="app.js"></script>
+<div class="stat">
+<div class="stat-title">Bilan net</div>
+<div class="stat-value" id="balance">0 kcal</div>
+</div>
+
+<div class="stat">
+<div class="stat-title">Poids</div>
+<div class="stat-value" id="weightDisplay">—</div>
+</div>
+
+</div>
+
+<div class="card">
+
+<label>Aliment</label>
+<input id="food">
+
+<label>Quantité</label>
+<input id="quantity">
+
+<label>Calories</label>
+<input id="foodCalories">
+
+<button onclick="addFood()">Ajouter aliment</button>
+
+</div>
+
+<div class="card">
+
+<label>Sport</label>
+<input id="sport">
+
+<label>Calories dépensées</label>
+<input id="sportCalories">
+
+<button onclick="addSport()">Ajouter activité</button>
+
+</div>
+
+<div class="card">
+
+<label>Poids (kg)</label>
+<input id="weight">
+
+<button onclick="addWeight()">Enregistrer poids</button>
+
+</div>
+
+<script>
+
+let caloriesIn=0
+let caloriesOut=0
+
+function updateStats(){
+
+document.getElementById("caloriesIn").innerText=caloriesIn+" kcal"
+document.getElementById("caloriesOut").innerText=caloriesOut+" kcal"
+
+let balance=caloriesIn-caloriesOut
+
+document.getElementById("balance").innerText=balance+" kcal"
+
+}
+
+function addFood(){
+
+let cal=parseFloat(document.getElementById("foodCalories").value)
+
+if(!isNaN(cal)){
+caloriesIn+=cal
+updateStats()
+}
+
+}
+
+function addSport(){
+
+let cal=parseFloat(document.getElementById("sportCalories").value)
+
+if(!isNaN(cal)){
+caloriesOut+=cal
+updateStats()
+}
+
+}
+
+function addWeight(){
+
+let w=document.getElementById("weight").value
+
+if(w){
+document.getElementById("weightDisplay").innerText=w+" kg"
+}
+
+}
+
+</script>
+
 </body>
 </html>
