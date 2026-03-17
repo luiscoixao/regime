@@ -24,7 +24,7 @@
       --soft: #f8fafb;
       --primary: #183a4a;
       --danger: #b23b3b;
-      --ok: #2d7f5e;
+      --ok: #2f7d5b;
     }
 
     html, body {
@@ -99,7 +99,7 @@
     }
 
     input[readonly] {
-      background: #f1f5f7;
+      background: #f2f5f7;
     }
 
     input[type="date"] {
@@ -273,9 +273,10 @@
     }
 
     .note {
-      margin-top: 8px;
-      color: var(--ok);
       font-size: 13px;
+      color: var(--ok);
+      margin-top: 6px;
+      line-height: 1.4;
       font-weight: 700;
     }
   </style>
@@ -341,13 +342,13 @@
     <div class="field-group">
       <label for="foodCaloriesPer100Input">Calories pour 100 g</label>
       <input id="foodCaloriesPer100Input" type="number" inputmode="decimal" placeholder="Ex. 190" />
-      <div class="hint">Remplissage automatique si l’aliment est reconnu. Valeur modifiable.</div>
+      <div class="hint">Remplissage automatique si l’aliment est connu. Tu peux corriger la valeur.</div>
     </div>
 
     <div class="field-group">
-      <label for="foodCaloriesInput">Calories calculées</label>
+      <label for="foodCaloriesInput">Calories</label>
       <input id="foodCaloriesInput" type="number" inputmode="decimal" readonly />
-      <div class="hint">Formule : grammes × kcal/100 g ÷ 100</div>
+      <div class="hint">Calcul automatique : quantité × kcal/100 g ÷ 100</div>
     </div>
 
     <button class="button" id="addFoodBtn">Ajouter aliment à cette date</button>
@@ -357,7 +358,7 @@
     <h2>Ajouter une activité</h2>
 
     <div class="field-group">
-      <label for="sportInput">Activité</label>
+      <label for="sportInput">Sport</label>
       <input id="sportInput" type="text" list="sportSuggestions" placeholder="Ex. marche rapide" />
       <datalist id="sportSuggestions"></datalist>
     </div>
@@ -370,13 +371,13 @@
     <div class="field-group">
       <label for="sportMetInput">Intensité (MET)</label>
       <input id="sportMetInput" type="number" inputmode="decimal" step="0.1" placeholder="Ex. 4.3" />
-      <div class="hint">Remplissage automatique si l’activité est reconnue. Valeur modifiable.</div>
+      <div class="hint">Remplissage automatique si l’activité est connue. Tu peux corriger la valeur.</div>
     </div>
 
     <div class="field-group">
-      <label for="sportCaloriesInput">Calories dépensées calculées</label>
+      <label for="sportCaloriesInput">Calories dépensées</label>
       <input id="sportCaloriesInput" type="number" inputmode="decimal" readonly />
-      <div class="hint">Formule : MET × poids × durée en heures</div>
+      <div class="hint">Calcul automatique : MET × poids × durée en heures</div>
       <div class="note" id="sportWeightNote"></div>
     </div>
 
@@ -413,7 +414,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "mon_regime_data_v4";
+    const STORAGE_KEY = "mon_regime_data_v3";
 
     const FOOD_DB = {
       "poulet roti": 190,
@@ -488,8 +489,10 @@
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return { days: {} };
+
         const parsed = JSON.parse(raw);
         if (!parsed.days || typeof parsed.days !== "object") return { days: {} };
+
         return parsed;
       } catch {
         return { days: {} };
@@ -499,28 +502,6 @@
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
-
-    function normalizeText(value) {
-      return String(value || "")
-        .trim()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-    }
-
-    function round1(value) {
-      return Math.round(value * 10) / 10;
-    }
-
-    function fillDatalist(id, values) {
-      const el = document.getElementById(id);
-      el.innerHTML = values
-        .map(value => `<option value="${escapeHtml(value)}"></option>`)
-        .join("");
-    }
-
-    fillDatalist("foodSuggestions", Object.keys(FOOD_DB).sort((a, b) => a.localeCompare(b)));
-    fillDatalist("sportSuggestions", Object.keys(SPORT_DB).sort((a, b) => a.localeCompare(b)));
 
     function todayISO() {
       const d = new Date();
@@ -546,15 +527,6 @@
         month: "long",
         year: "numeric"
       });
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
     }
 
     function ensureDay(isoDate) {
@@ -583,8 +555,40 @@
       return day.sports.reduce((sum, item) => sum + Number(item.calories || 0), 0);
     }
 
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function round1(value) {
+      return Math.round(value * 10) / 10;
+    }
+
+    function fillDatalist(id, values) {
+      const el = document.getElementById(id);
+      el.innerHTML = values
+        .map(value => `<option value="${escapeHtml(value)}"></option>`)
+        .join("");
+    }
+
+    fillDatalist("foodSuggestions", Object.keys(FOOD_DB).sort((a, b) => a.localeCompare(b)));
+    fillDatalist("sportSuggestions", Object.keys(SPORT_DB).sort((a, b) => a.localeCompare(b)));
+
     function getWeightForDate(iso) {
       const day = ensureDay(iso);
+
       if (day.weight !== null && day.weight !== "" && !Number.isNaN(Number(day.weight))) {
         return Number(day.weight);
       }
@@ -601,10 +605,11 @@
       return null;
     }
 
-    function updateFoodAuto() {
-      const nameKey = normalizeText(foodInput.value);
-      if (FOOD_DB[nameKey] !== undefined && !foodCaloriesPer100Input.dataset.edited) {
-        foodCaloriesPer100Input.value = FOOD_DB[nameKey];
+    function updateFoodCalculation() {
+      const foodKey = normalizeText(foodInput.value);
+
+      if (FOOD_DB[foodKey] !== undefined && foodCaloriesPer100Input.dataset.manual !== "1") {
+        foodCaloriesPer100Input.value = FOOD_DB[foodKey];
       }
 
       const grams = Number(quantityInput.value);
@@ -617,10 +622,11 @@
       }
     }
 
-    function updateSportAuto() {
-      const nameKey = normalizeText(sportInput.value);
-      if (SPORT_DB[nameKey] !== undefined && !sportMetInput.dataset.edited) {
-        sportMetInput.value = SPORT_DB[nameKey];
+    function updateSportCalculation() {
+      const sportKey = normalizeText(sportInput.value);
+
+      if (SPORT_DB[sportKey] !== undefined && sportMetInput.dataset.manual !== "1") {
+        sportMetInput.value = SPORT_DB[sportKey];
       }
 
       const duration = Number(durationInput.value);
@@ -630,7 +636,7 @@
       if (weight) {
         sportWeightNote.textContent = `Poids utilisé pour le calcul : ${weight} kg`;
       } else {
-        sportWeightNote.textContent = "Aucun poids enregistré : le calcul du sport attend un poids.";
+        sportWeightNote.textContent = "Enregistre un poids pour calculer automatiquement les calories du sport.";
       }
 
       if (!Number.isNaN(duration) && duration > 0 && !Number.isNaN(met) && met > 0 && weight) {
@@ -659,8 +665,9 @@
       renderSportList(day, iso);
       renderWeightHistory();
 
-      updateFoodAuto();
-      updateSportAuto();
+      updateFoodCalculation();
+      updateSportCalculation();
+
       saveData();
     }
 
@@ -758,20 +765,21 @@
       foodInput.value = "";
       quantityInput.value = "";
       foodCaloriesPer100Input.value = "";
-      foodCaloriesPer100Input.dataset.edited = "";
       foodCaloriesInput.value = "";
+      foodCaloriesPer100Input.dataset.manual = "";
+
       render();
     }
 
     function addSport() {
       const iso = currentDateISO();
       const day = ensureDay(iso);
+      const weight = getWeightForDate(iso);
 
       const name = sportInput.value.trim();
       const duration = Number(durationInput.value);
       const met = Number(sportMetInput.value);
       const calories = Number(sportCaloriesInput.value);
-      const weight = getWeightForDate(iso);
 
       if (!weight) {
         alert("Enregistre d’abord un poids pour calculer les calories du sport.");
@@ -784,7 +792,7 @@
       }
 
       if (Number.isNaN(calories) || calories <= 0) {
-        alert("Les calories sportives calculées sont invalides.");
+        alert("Les calories calculées sont invalides.");
         return;
       }
 
@@ -799,14 +807,16 @@
       sportInput.value = "";
       durationInput.value = "";
       sportMetInput.value = "";
-      sportMetInput.dataset.edited = "";
       sportCaloriesInput.value = "";
+      sportMetInput.dataset.manual = "";
+
       render();
     }
 
     function saveWeight() {
       const iso = currentDateISO();
       const day = ensureDay(iso);
+
       const weight = Number(weightInput.value);
 
       if (Number.isNaN(weight) || weight <= 0) {
@@ -841,18 +851,18 @@
     window.deleteFood = deleteFood;
     window.deleteSport = deleteSport;
 
-    foodInput.addEventListener("input", updateFoodAuto);
-    quantityInput.addEventListener("input", updateFoodAuto);
+    foodInput.addEventListener("input", updateFoodCalculation);
+    quantityInput.addEventListener("input", updateFoodCalculation);
     foodCaloriesPer100Input.addEventListener("input", () => {
-      foodCaloriesPer100Input.dataset.edited = "1";
-      updateFoodAuto();
+      foodCaloriesPer100Input.dataset.manual = "1";
+      updateFoodCalculation();
     });
 
-    sportInput.addEventListener("input", updateSportAuto);
-    durationInput.addEventListener("input", updateSportAuto);
+    sportInput.addEventListener("input", updateSportCalculation);
+    durationInput.addEventListener("input", updateSportCalculation);
     sportMetInput.addEventListener("input", () => {
-      sportMetInput.dataset.edited = "1";
-      updateSportAuto();
+      sportMetInput.dataset.manual = "1";
+      updateSportCalculation();
     });
 
     document.getElementById("addFoodBtn").addEventListener("click", addFood);
