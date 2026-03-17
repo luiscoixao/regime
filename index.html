@@ -16,7 +16,7 @@
     }
 
     :root {
-      --bg: #f3f4f6;
+      --bg: #eef3f6;
       --card: #ffffff;
       --text: #183041;
       --muted: #7d8c97;
@@ -63,6 +63,24 @@
       margin-bottom: 18px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.04);
       overflow: hidden;
+    }
+
+    .calendar-card {
+      background: linear-gradient(135deg, #2f6f8f, #4a9bb8);
+      color: white;
+    }
+
+    .calendar-card h2,
+    .calendar-card label,
+    .calendar-card .selected-date-label,
+    .calendar-card .selected-date-value {
+      color: white;
+    }
+
+    .calendar-card input[type="date"] {
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #183041;
     }
 
     .card h2 {
@@ -115,10 +133,11 @@
     }
 
     .selected-date {
-      background: #eef4f6;
+      background: rgba(255,255,255,0.16);
       border-radius: 18px;
       padding: 16px;
       text-align: center;
+      backdrop-filter: blur(4px);
     }
 
     .selected-date-label {
@@ -156,6 +175,30 @@
       font-size: 26px;
       font-weight: 800;
       line-height: 1.1;
+      letter-spacing: -0.3px;
+    }
+
+    .balance-positive {
+      background: #e8f5ef;
+      border: 1px solid #bfe4cf;
+    }
+
+    .balance-positive .stat-value {
+      color: #2f7d5b;
+    }
+
+    .balance-negative {
+      background: #fff1e7;
+      border: 1px solid #f3d2b8;
+    }
+
+    .balance-negative .stat-value {
+      color: #c26d22;
+    }
+
+    .balance-neutral {
+      background: var(--soft);
+      border: 1px solid #eaf0f2;
     }
 
     .field-group {
@@ -169,16 +212,18 @@
       padding: 15px 16px;
       font-size: 16px;
       font-weight: 800;
-      background: var(--primary);
+      background: linear-gradient(135deg, #2f6f8f, #3d8fb3);
       color: white;
       appearance: none;
       -webkit-appearance: none;
+      box-shadow: 0 6px 12px rgba(47,111,143,0.25);
     }
 
     .button.secondary {
       background: #eef3f5;
       color: var(--text);
       border: 1px solid var(--line);
+      box-shadow: none;
     }
 
     .button-row {
@@ -195,10 +240,11 @@
     }
 
     .list-item {
-      background: var(--soft);
-      border: 1px solid #e9eef1;
+      background: white;
       border-radius: 18px;
       padding: 14px;
+      border: 1px solid var(--line);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
     }
 
     .list-top {
@@ -285,7 +331,7 @@
   <div class="subtitle">Suivi alimentaire</div>
   <h1>Mon Régime</h1>
 
-  <div class="card">
+  <div class="card calendar-card">
     <h2>Calendrier</h2>
 
     <div class="top-date">
@@ -313,7 +359,7 @@
         <div class="stat-value" id="caloriesOut">0 kcal</div>
       </div>
 
-      <div class="stat">
+      <div class="stat balance-neutral" id="balanceCard">
         <div class="stat-title">Bilan net</div>
         <div class="stat-value" id="balance">0 kcal</div>
       </div>
@@ -480,6 +526,7 @@
     const caloriesInEl = document.getElementById("caloriesIn");
     const caloriesOutEl = document.getElementById("caloriesOut");
     const balanceEl = document.getElementById("balance");
+    const balanceCard = document.getElementById("balanceCard");
     const weightDisplayEl = document.getElementById("weightDisplay");
     const foodListEl = document.getElementById("foodList");
     const sportListEl = document.getElementById("sportList");
@@ -661,6 +708,15 @@
       balanceEl.textContent = `${balance} kcal`;
       weightDisplayEl.textContent = day.weight ? `${day.weight} kg` : "—";
 
+      balanceCard.classList.remove("balance-positive", "balance-negative", "balance-neutral");
+      if (balance > 0) {
+        balanceCard.classList.add("balance-positive");
+      } else if (balance < 0) {
+        balanceCard.classList.add("balance-negative");
+      } else {
+        balanceCard.classList.add("balance-neutral");
+      }
+
       renderFoodList(day, iso);
       renderSportList(day, iso);
       renderWeightHistory();
@@ -720,20 +776,40 @@
 
     function renderWeightHistory() {
       const entries = Object.entries(appData.days)
-        .filter(([_, day]) => day.weight !== null && day.weight !== "" && day.weight !== undefined)
+        .filter(([_, day]) => {
+          const hasWeight = day.weight !== null && day.weight !== "" && day.weight !== undefined;
+          const hasFood = Array.isArray(day.foods) && day.foods.length > 0;
+          const hasSport = Array.isArray(day.sports) && day.sports.length > 0;
+          return hasWeight || hasFood || hasSport;
+        })
         .sort((a, b) => b[0].localeCompare(a[0]));
 
       if (!entries.length) {
-        weightHistoryEl.innerHTML = `<div class="empty">Aucun poids enregistré pour le moment.</div>`;
+        weightHistoryEl.innerHTML = `<div class="empty">Aucun historique pour le moment.</div>`;
         return;
       }
 
-      weightHistoryEl.innerHTML = entries.map(([iso, day]) => `
-        <div class="history-item">
-          <div class="history-date">${escapeHtml(isoToFR(iso))}</div>
-          <div class="history-weight">${escapeHtml(String(day.weight))} kg</div>
-        </div>
-      `).join("");
+      weightHistoryEl.innerHTML = entries.map(([iso, day]) => {
+        const caloriesIn = round1(totalFoodCalories(day));
+        const caloriesOut = round1(totalSportCalories(day));
+        const balance = round1(caloriesIn - caloriesOut);
+
+        return `
+          <div class="list-item">
+            <div class="list-top">
+              <div>
+                <div class="item-title">${escapeHtml(isoToFR(iso))}</div>
+                <div class="item-meta">
+                  Poids : ${day.weight !== null && day.weight !== "" && day.weight !== undefined ? `${escapeHtml(String(day.weight))} kg` : "—"}<br>
+                  Calories consommées : ${caloriesIn} kcal<br>
+                  Calories dépensées : ${caloriesOut} kcal<br>
+                  Bilan net : ${balance} kcal
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     function addFood() {
