@@ -211,7 +211,7 @@
     .item-meta {
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.35;
+      line-height: 1.45;
     }
 
     .item-value {
@@ -257,6 +257,13 @@
     .history-weight {
       font-weight: 800;
       font-size: 18px;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -309,17 +316,25 @@
 
     <div class="field-group">
       <label for="foodInput">Aliment</label>
-      <input id="foodInput" type="text" placeholder="Ex. yaourt nature" />
+      <input id="foodInput" type="text" list="foodSuggestions" placeholder="Ex. poulet rôti" />
+      <datalist id="foodSuggestions"></datalist>
     </div>
 
     <div class="field-group">
-      <label for="quantityInput">Quantité</label>
-      <input id="quantityInput" type="text" placeholder="Ex. 1 pot / 150 g" />
+      <label for="quantityInput">Quantité mangée (g)</label>
+      <input id="quantityInput" type="number" inputmode="decimal" placeholder="Ex. 200" />
     </div>
 
     <div class="field-group">
-      <label for="foodCaloriesInput">Calories</label>
-      <input id="foodCaloriesInput" type="number" inputmode="decimal" placeholder="Ex. 90" />
+      <label for="foodCaloriesPer100Input">Calories pour 100 g</label>
+      <input id="foodCaloriesPer100Input" type="number" inputmode="decimal" placeholder="Ex. 190" />
+      <div class="hint">Se remplit automatiquement si l’aliment est connu. Tu peux modifier la valeur.</div>
+    </div>
+
+    <div class="field-group">
+      <label for="foodCaloriesInput">Calories calculées</label>
+      <input id="foodCaloriesInput" type="number" inputmode="decimal" placeholder="Calcul automatique" />
+      <div class="hint">Calcul : quantité × calories pour 100 g ÷ 100</div>
     </div>
 
     <button class="button" id="addFoodBtn">Ajouter aliment à cette date</button>
@@ -329,13 +344,26 @@
     <h2>Ajouter une activité</h2>
 
     <div class="field-group">
-      <label for="sportInput">Sport</label>
-      <input id="sportInput" type="text" placeholder="Ex. marche rapide" />
+      <label for="sportInput">Activité</label>
+      <input id="sportInput" type="text" list="sportSuggestions" placeholder="Ex. marche rapide" />
+      <datalist id="sportSuggestions"></datalist>
     </div>
 
     <div class="field-group">
-      <label for="sportCaloriesInput">Calories dépensées</label>
-      <input id="sportCaloriesInput" type="number" inputmode="decimal" placeholder="Ex. 250" />
+      <label for="durationInput">Durée (minutes)</label>
+      <input id="durationInput" type="number" inputmode="decimal" placeholder="Ex. 45" />
+    </div>
+
+    <div class="field-group">
+      <label for="sportMetInput">Intensité activité (MET)</label>
+      <input id="sportMetInput" type="number" inputmode="decimal" step="0.1" placeholder="Ex. 4.3" />
+      <div class="hint">Se remplit automatiquement si l’activité est connue. Tu peux modifier.</div>
+    </div>
+
+    <div class="field-group">
+      <label for="sportCaloriesInput">Calories dépensées calculées</label>
+      <input id="sportCaloriesInput" type="number" inputmode="decimal" placeholder="Calcul automatique" />
+      <div class="hint">Calcul : MET × poids × durée en heures</div>
     </div>
 
     <button class="button" id="addSportBtn">Ajouter activité à cette date</button>
@@ -373,6 +401,58 @@
   <script>
     const STORAGE_KEY = "mon_regime_data_v3";
 
+    const FOOD_DB = {
+      "poulet rôti": 190,
+      "poulet roti": 190,
+      "blanc de poulet": 165,
+      "steak haché": 250,
+      "saumon": 208,
+      "thon": 132,
+      "oeuf": 155,
+      "œuf": 155,
+      "riz cuit": 130,
+      "pâtes cuites": 158,
+      "pates cuites": 158,
+      "pommes de terre rôties": 135,
+      "pommes de terre roties": 135,
+      "carottes rôties": 80,
+      "carottes roties": 80,
+      "patates carottes rôties": 110,
+      "patates carottes roties": 110,
+      "pain": 265,
+      "fromage": 350,
+      "yaourt nature": 60,
+      "banane": 89,
+      "pomme": 52,
+      "orange": 47,
+      "salade": 15,
+      "avocat": 160,
+      "pizza": 270,
+      "soupe": 45
+    };
+
+    const SPORT_DB = {
+      "marche lente": 2.8,
+      "marche": 3.3,
+      "marche rapide": 4.3,
+      "randonnée": 6.0,
+      "velo tranquille": 4.0,
+      "vélo tranquille": 4.0,
+      "vélo": 6.0,
+      "velo": 6.0,
+      "course": 8.3,
+      "jogging": 7.0,
+      "natation": 6.0,
+      "musculation": 3.5,
+      "fitness": 5.0,
+      "football": 7.0,
+      "futsal": 8.0,
+      "tennis": 7.3,
+      "ménage": 3.0,
+      "menage": 3.0,
+      "jardinage": 4.0
+    };
+
     const appData = loadData();
 
     const calendarInput = document.getElementById("calendarInput");
@@ -380,9 +460,12 @@
 
     const foodInput = document.getElementById("foodInput");
     const quantityInput = document.getElementById("quantityInput");
+    const foodCaloriesPer100Input = document.getElementById("foodCaloriesPer100Input");
     const foodCaloriesInput = document.getElementById("foodCaloriesInput");
 
     const sportInput = document.getElementById("sportInput");
+    const durationInput = document.getElementById("durationInput");
+    const sportMetInput = document.getElementById("sportMetInput");
     const sportCaloriesInput = document.getElementById("sportCaloriesInput");
 
     const weightInput = document.getElementById("weightInput");
@@ -394,6 +477,26 @@
     const foodListEl = document.getElementById("foodList");
     const sportListEl = document.getElementById("sportList");
     const weightHistoryEl = document.getElementById("weightHistory");
+
+    function fillDatalist(id, values) {
+      const el = document.getElementById(id);
+      el.innerHTML = values.map(value => `<option value="${escapeHtml(value)}"></option>`).join("");
+    }
+
+    fillDatalist("foodSuggestions", Object.keys(FOOD_DB).sort((a, b) => a.localeCompare(b)));
+    fillDatalist("sportSuggestions", Object.keys(SPORT_DB).sort((a, b) => a.localeCompare(b)));
+
+    function normalizeText(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function round1(value) {
+      return Math.round(value * 10) / 10;
+    }
 
     function loadData() {
       try {
@@ -472,15 +575,74 @@
         .replaceAll("'", "&#039;");
     }
 
+    function findLatestWeight(referenceIso) {
+      const dates = Object.keys(appData.days).sort((a, b) => b.localeCompare(a));
+      for (const iso of dates) {
+        if (iso <= referenceIso) {
+          const w = appData.days[iso]?.weight;
+          if (w !== null && w !== "" && w !== undefined && !Number.isNaN(Number(w))) {
+            return Number(w);
+          }
+        }
+      }
+      return null;
+    }
+
+    function getCurrentWeightForCalculation() {
+      const iso = currentDateISO();
+      const day = ensureDay(iso);
+
+      if (day.weight !== null && day.weight !== "" && day.weight !== undefined && !Number.isNaN(Number(day.weight))) {
+        return Number(day.weight);
+      }
+
+      return findLatestWeight(iso);
+    }
+
+    function autoFillFoodBase() {
+      const key = normalizeText(foodInput.value);
+      if (FOOD_DB[key] !== undefined) {
+        foodCaloriesPer100Input.value = FOOD_DB[key];
+      }
+      calculateFoodCalories();
+    }
+
+    function calculateFoodCalories() {
+      const quantity = Number(quantityInput.value);
+      const per100 = Number(foodCaloriesPer100Input.value);
+
+      if (!Number.isNaN(quantity) && quantity > 0 && !Number.isNaN(per100) && per100 > 0) {
+        foodCaloriesInput.value = round1((quantity * per100) / 100);
+      }
+    }
+
+    function autoFillSportBase() {
+      const key = normalizeText(sportInput.value);
+      if (SPORT_DB[key] !== undefined) {
+        sportMetInput.value = SPORT_DB[key];
+      }
+      calculateSportCalories();
+    }
+
+    function calculateSportCalories() {
+      const duration = Number(durationInput.value);
+      const met = Number(sportMetInput.value);
+      const weight = getCurrentWeightForCalculation();
+
+      if (!Number.isNaN(duration) && duration > 0 && !Number.isNaN(met) && met > 0 && weight && weight > 0) {
+        sportCaloriesInput.value = round1(met * weight * (duration / 60));
+      }
+    }
+
     function render() {
       const iso = currentDateISO();
       const day = ensureDay(iso);
 
       selectedDateLabel.textContent = isoToPrettyFR(iso);
 
-      const caloriesIn = totalFoodCalories(day);
-      const caloriesOut = totalSportCalories(day);
-      const balance = caloriesIn - caloriesOut;
+      const caloriesIn = round1(totalFoodCalories(day));
+      const caloriesOut = round1(totalSportCalories(day));
+      const balance = round1(caloriesIn - caloriesOut);
 
       caloriesInEl.textContent = `${caloriesIn} kcal`;
       caloriesOutEl.textContent = `${caloriesOut} kcal`;
@@ -491,6 +653,7 @@
       renderSportList(day, iso);
       renderWeightHistory();
 
+      calculateSportCalories();
       saveData();
     }
 
@@ -505,7 +668,10 @@
           <div class="list-top">
             <div>
               <div class="item-title">${escapeHtml(item.name)}</div>
-              <div class="item-meta">Quantité : ${escapeHtml(item.quantity || "—")}</div>
+              <div class="item-meta">
+                Quantité : ${escapeHtml(String(item.quantity || "—"))} g<br>
+                Base : ${escapeHtml(String(item.caloriesPer100 || "—"))} kcal / 100 g
+              </div>
             </div>
             <div class="item-value">${Number(item.calories)} kcal</div>
           </div>
@@ -525,7 +691,10 @@
           <div class="list-top">
             <div>
               <div class="item-title">${escapeHtml(item.name)}</div>
-              <div class="item-meta">Activité enregistrée le ${escapeHtml(isoToFR(iso))}</div>
+              <div class="item-meta">
+                Durée : ${escapeHtml(String(item.duration || "—"))} min<br>
+                Intensité : ${escapeHtml(String(item.met || "—"))} MET
+              </div>
             </div>
             <div class="item-value">${Number(item.calories)} kcal</div>
           </div>
@@ -557,18 +726,25 @@
       const day = ensureDay(iso);
 
       const name = foodInput.value.trim();
-      const quantity = quantityInput.value.trim();
+      const quantity = Number(quantityInput.value);
+      const caloriesPer100 = Number(foodCaloriesPer100Input.value);
       const calories = Number(foodCaloriesInput.value);
 
-      if (!name || !quantity || !foodCaloriesInput.value || Number.isNaN(calories)) {
-        alert("Remplis aliment, quantité et calories.");
+      if (!name || Number.isNaN(quantity) || quantity <= 0 || Number.isNaN(caloriesPer100) || caloriesPer100 <= 0 || Number.isNaN(calories) || calories <= 0) {
+        alert("Remplis aliment, quantité en grammes et base calories/100 g.");
         return;
       }
 
-      day.foods.push({ name, quantity, calories });
+      day.foods.push({
+        name,
+        quantity: round1(quantity),
+        caloriesPer100: round1(caloriesPer100),
+        calories: round1(calories)
+      });
 
       foodInput.value = "";
       quantityInput.value = "";
+      foodCaloriesPer100Input.value = "";
       foodCaloriesInput.value = "";
       render();
     }
@@ -578,16 +754,25 @@
       const day = ensureDay(iso);
 
       const name = sportInput.value.trim();
+      const duration = Number(durationInput.value);
+      const met = Number(sportMetInput.value);
       const calories = Number(sportCaloriesInput.value);
 
-      if (!name || !sportCaloriesInput.value || Number.isNaN(calories)) {
-        alert("Remplis activité et calories dépensées.");
+      if (!name || Number.isNaN(duration) || duration <= 0 || Number.isNaN(met) || met <= 0 || Number.isNaN(calories) || calories <= 0) {
+        alert("Remplis activité, durée et intensité.");
         return;
       }
 
-      day.sports.push({ name, calories });
+      day.sports.push({
+        name,
+        duration: round1(duration),
+        met: round1(met),
+        calories: round1(calories)
+      });
 
       sportInput.value = "";
+      durationInput.value = "";
+      sportMetInput.value = "";
       sportCaloriesInput.value = "";
       render();
     }
@@ -628,6 +813,14 @@
 
     window.deleteFood = deleteFood;
     window.deleteSport = deleteSport;
+
+    foodInput.addEventListener("input", autoFillFoodBase);
+    quantityInput.addEventListener("input", calculateFoodCalories);
+    foodCaloriesPer100Input.addEventListener("input", calculateFoodCalories);
+
+    sportInput.addEventListener("input", autoFillSportBase);
+    durationInput.addEventListener("input", calculateSportCalories);
+    sportMetInput.addEventListener("input", calculateSportCalories);
 
     document.getElementById("addFoodBtn").addEventListener("click", addFood);
     document.getElementById("addSportBtn").addEventListener("click", addSport);
