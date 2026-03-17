@@ -1,238 +1,1227 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mon Régime</title>
 
-<title>Mon Régime</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Mon Régime" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  <meta name="theme-color" content="#eef3f6" />
 
-<!-- ✅ iPhone App -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Mon Régime">
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-<!-- ✅ Icône -->
-<link rel="apple-touch-icon" href="icon.png">
+    :root {
+      --bg: #eef3f6;
+      --card: #ffffff;
+      --text: #183041;
+      --muted: #7d8c97;
+      --line: #d9e0e4;
+      --soft: #f8fafb;
+      --primary: #183a4a;
+      --danger: #b23b3b;
+      --ok: #2f7d5b;
 
-<meta name="theme-color" content="#f7f5ee">
+      --good: #2f7d5b;
+      --good-soft: #e8f5ef;
 
-<style>
-:root{
---bg:#eef3f6;
---card:#ffffff;
---text:#183041;
+      --medium: #f2b705;
+      --medium-soft: #fff6d6;
 
-/* couleurs icône */
---good:#2f7d5b;
---good-soft:#e7f4ea;
+      --bad: #e67e22;
+      --bad-soft: #fff1e7;
 
---medium:#f2b705;
---medium-soft:#fff4cf;
+      --empty: #eef2f4;
+      --empty-text: #9aa5ad;
 
---bad:#e67e22;
---bad-soft:#ffe9dc;
+      --calendar-top-1: #fffdf8;
+      --calendar-top-2: #f7f5ee;
+    }
 
---empty:#f1f2ef;
-}
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-/* GLOBAL */
+    body {
+      padding: 24px 18px 40px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
 
-body{
-margin:0;
-font-family:-apple-system;
-background:var(--bg);
-padding:20px;
-}
+    .subtitle {
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
 
-h1{
-margin:0 0 10px;
-}
+    h1 {
+      margin: 0 0 22px;
+      font-size: 42px;
+      line-height: 1;
+      font-weight: 800;
+    }
 
-/* CALENDRIER STYLE ICÔNE */
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
 
-.calendar-shell{
-background:linear-gradient(180deg,#fffdf8,#f7f5ee);
-border-radius:24px;
-padding:16px;
-margin-bottom:16px;
-}
+    .calendar-shell {
+      background: linear-gradient(180deg, var(--calendar-top-1), var(--calendar-top-2));
+      color: var(--text);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+      border: 1px solid #ece6d9;
+    }
 
-.selected{
-background:#eef6ef;
-padding:10px;
-border-radius:12px;
-margin-bottom:10px;
-font-weight:bold;
-}
+    .calendar-shell h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      color: #264b3f;
+    }
 
-.calendar{
-display:grid;
-grid-template-columns:repeat(7,1fr);
-gap:6px;
-}
+    .calendar-subtitle {
+      color: #6f7d76;
+      font-size: 15px;
+      line-height: 1.35;
+      margin-bottom: 18px;
+    }
 
-.day{
-aspect-ratio:1;
-border-radius:12px;
-padding:8px;
-font-weight:bold;
-}
+    .selected-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 12px 18px;
+      border-radius: 18px;
+      background: #eef6ef;
+      color: #264b3f;
+      font-size: 18px;
+      font-weight: 800;
+      border: 1px solid #d8eadb;
+      box-shadow: none;
+      margin-bottom: 18px;
+    }
 
-.day.good{background:var(--good-soft);color:var(--good);}
-.day.medium{background:var(--medium-soft);color:#b88600;}
-.day.bad{background:var(--bad-soft);color:var(--bad);}
-.day.empty{background:var(--empty);color:#aaa;}
+    .calendar-panel {
+      background: linear-gradient(180deg, #fffefb, #f8f6f0);
+      border: 1px solid #ece6d9;
+      border-radius: 24px;
+      padding: 16px;
+      overflow: hidden;
+    }
 
-.day.selected{
-outline:3px solid #8bc34a;
-}
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
 
-/* CARDS */
+    .calendar-month {
+      color: #264b3f;
+      font-size: 22px;
+      font-weight: 800;
+      text-transform: capitalize;
+    }
 
-.card{
-background:var(--card);
-border-radius:20px;
-padding:16px;
-margin-bottom:16px;
-}
+    .calendar-nav {
+      display: flex;
+      gap: 10px;
+    }
 
-.stat{
-font-size:18px;
-font-weight:bold;
-margin-bottom:6px;
-}
+    .calendar-nav button {
+      width: 56px;
+      height: 56px;
+      flex: 0 0 56px;
+      border: 1px solid #e4dccb;
+      border-radius: 18px;
+      background: #f6f1e7;
+      color: #8c6b1f;
+      font-size: 30px;
+      font-weight: 700;
+      box-shadow: none;
+    }
 
-/* INPUT */
+    .weekday-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+      width: 100%;
+    }
 
-input{
-width:100%;
-padding:12px;
-border-radius:12px;
-border:1px solid #ccc;
-margin-bottom:10px;
-}
+    .weekday {
+      text-align: center;
+      color: #7e8b84;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 6px 0;
+      min-width: 0;
+    }
 
-button{
-width:100%;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#2f7d5b;
-color:white;
-font-weight:bold;
-}
-</style>
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+    }
+
+    .day-cell {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      min-width: 0;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      font-size: 18px;
+      font-weight: 800;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 10px;
+      transition: transform 0.15s ease;
+      overflow: hidden;
+    }
+
+    .day-cell:active {
+      transform: scale(0.98);
+    }
+
+    .day-cell.empty-slot {
+      background: transparent;
+      box-shadow: none;
+      pointer-events: none;
+      border: none;
+    }
+
+    .day-cell.good {
+      background: #e7f4ea;
+      color: #2f7d5b;
+      border-color: #cfe5d5;
+    }
+
+    .day-cell.medium {
+      background: #fff4cf;
+      color: #b88600;
+      border-color: #f1e0a0;
+    }
+
+    .day-cell.bad {
+      background: #ffe9dc;
+      color: #d97a22;
+      border-color: #f3cfb4;
+    }
+
+    .day-cell.empty {
+      background: #f1f2ef;
+      color: #a0aaa3;
+      border-color: #e5e7e3;
+      box-shadow: none;
+    }
+
+    .day-cell.selected {
+      outline: 3px solid #8bc34a;
+      outline-offset: 0;
+      box-shadow: inset 0 0 0 3px #ffffff;
+    }
+
+    .day-cell.today::after {
+      content: "";
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f2b705;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 15px 16px;
+      font-size: 17px;
+      background: #fbfbfc;
+      color: var(--text);
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #b9c7cf;
+      background: #fff;
+    }
+
+    input[readonly] {
+      background: #f2f5f7;
+    }
+
+    .stats {
+      display: grid;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .stat {
+      background: var(--soft);
+      border: 1px solid #eaf0f2;
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .stat-title {
+      color: var(--muted);
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.3px;
+    }
+
+    .balance-good {
+      background: var(--good-soft);
+      border: 1px solid #bfe4cf;
+    }
+
+    .balance-good .stat-value {
+      color: var(--good);
+    }
+
+    .balance-medium {
+      background: var(--medium-soft);
+      border: 1px solid #f0df98;
+    }
+
+    .balance-medium .stat-value {
+      color: #b88600;
+    }
+
+    .balance-bad {
+      background: var(--bad-soft);
+      border: 1px solid #f1cfb0;
+    }
+
+    .balance-bad .stat-value {
+      color: var(--bad);
+    }
+
+    .balance-empty {
+      background: var(--soft);
+      border: 1px solid #eaf0f2;
+    }
+
+    .field-group {
+      margin-bottom: 14px;
+    }
+
+    .button {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 15px 16px;
+      font-size: 16px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2f6f8f, #3d8fb3);
+      color: white;
+      appearance: none;
+      -webkit-appearance: none;
+      box-shadow: 0 6px 12px rgba(47,111,143,0.25);
+    }
+
+    .button.secondary {
+      background: #eef3f5;
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .list-item {
+      background: white;
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .list-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .item-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .item-meta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .item-value {
+      font-size: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .delete-btn {
+      margin-top: 10px;
+      border: none;
+      background: transparent;
+      color: var(--danger);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 0;
+    }
+
+    .empty-box {
+      background: var(--primary);
+      color: white;
+      border-radius: 22px;
+      padding: 18px;
+      line-height: 1.45;
+      font-size: 15px;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .note {
+      font-size: 13px;
+      color: var(--ok);
+      margin-top: 6px;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 18px 14px 34px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .calendar-panel {
+        padding: 12px;
+      }
+
+      .calendar-month {
+        font-size: 18px;
+      }
+
+      .calendar-grid,
+      .weekday-row {
+        gap: 6px;
+      }
+
+      .calendar-nav button {
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        border-radius: 15px;
+        font-size: 26px;
+      }
+
+      .weekday {
+        font-size: 13px;
+      }
+
+      .day-cell {
+        border-radius: 14px;
+        font-size: 15px;
+        padding: 8px;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="subtitle">Suivi alimentaire</div>
+  <h1>Mon Régime</h1>
 
-<h1>Mon Régime</h1>
+  <div class="calendar-shell">
+    <h2>Calendrier mensuel</h2>
+    <div class="calendar-subtitle">Choisis un jour et suis ton alimentation, ton activité et ton poids.</div>
 
-<div class="calendar-shell">
-<div class="selected" id="selectedDate"></div>
-<div class="calendar" id="calendar"></div>
-</div>
+    <div class="selected-pill" id="selectedDateLabel">—</div>
 
-<div class="card">
-<div class="stat" id="in"></div>
-<div class="stat" id="out"></div>
-<div class="stat" id="balance"></div>
-</div>
+    <div class="calendar-panel">
+      <div class="calendar-header">
+        <div class="calendar-month" id="monthLabel">—</div>
+        <div class="calendar-nav">
+          <button type="button" id="prevMonthBtn">‹</button>
+          <button type="button" id="nextMonthBtn">›</button>
+        </div>
+      </div>
 
-<div class="card">
-<input id="food" placeholder="Aliment">
-<input id="cal" type="number" placeholder="Calories">
-<button onclick="addFood()">Ajouter aliment</button>
-</div>
+      <div class="weekday-row">
+        <div class="weekday">Lun</div>
+        <div class="weekday">Mar</div>
+        <div class="weekday">Mer</div>
+        <div class="weekday">Jeu</div>
+        <div class="weekday">Ven</div>
+        <div class="weekday">Sam</div>
+        <div class="weekday">Dim</div>
+      </div>
 
-<div class="card">
-<input id="sport" placeholder="Sport">
-<input id="calSport" type="number" placeholder="Calories dépensées">
-<button onclick="addSport()">Ajouter sport</button>
-</div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </div>
 
-<script>
-const STORAGE="regime_final";
-let data=JSON.parse(localStorage.getItem(STORAGE)||'{"days":{}}');
+  <div class="card">
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-title">Calories consommées</div>
+        <div class="stat-value" id="caloriesIn">0 kcal</div>
+      </div>
 
-let selected=new Date().toISOString().slice(0,10);
+      <div class="stat">
+        <div class="stat-title">Calories dépensées</div>
+        <div class="stat-value" id="caloriesOut">0 kcal</div>
+      </div>
 
-function getDay(d){
-if(!data.days[d])data.days[d]={foods:[],sports:[]};
-return data.days[d];
-}
+      <div class="stat balance-empty" id="balanceCard">
+        <div class="stat-title">Bilan net</div>
+        <div class="stat-value" id="balance">0 kcal</div>
+      </div>
 
-function totalIn(day){return day.foods.reduce((s,f)=>s+f.cal,0);}
-function totalOut(day){return day.sports.reduce((s,f)=>s+f.cal,0);}
+      <div class="stat">
+        <div class="stat-title">Poids</div>
+        <div class="stat-value" id="weightDisplay">—</div>
+      </div>
+    </div>
+  </div>
 
-function getClass(balance){
-if(balance==null)return"empty";
-if(balance<=-1)return"good";
-if(balance<200)return"medium";
-return"bad";
-}
+  <div class="card">
+    <h2>Ajouter un aliment</h2>
 
-function renderCalendar(){
-const cal=document.getElementById("calendar");
-cal.innerHTML="";
+    <div class="field-group">
+      <label for="foodInput">Aliment</label>
+      <input id="foodInput" type="text" list="foodSuggestions" placeholder="Ex. poulet rôti" />
+      <datalist id="foodSuggestions"></datalist>
+    </div>
 
-const now=new Date();
-const year=now.getFullYear();
-const month=now.getMonth();
+    <div class="field-group">
+      <label for="quantityInput">Quantité mangée (g)</label>
+      <input id="quantityInput" type="number" inputmode="decimal" placeholder="Ex. 200" />
+    </div>
 
-const days=new Date(year,month+1,0).getDate();
+    <div class="field-group">
+      <label for="foodCaloriesPer100Input">Calories pour 100 g</label>
+      <input id="foodCaloriesPer100Input" type="number" inputmode="decimal" placeholder="Ex. 190" />
+      <div class="hint">Remplissage automatique si l’aliment est reconnu. Tu peux corriger la valeur.</div>
+    </div>
 
-for(let d=1;d<=days;d++){
-const iso=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-const day=getDay(iso);
+    <div class="field-group">
+      <label for="foodCaloriesInput">Calories</label>
+      <input id="foodCaloriesInput" type="number" inputmode="decimal" readonly />
+      <div class="hint">Calcul automatique : quantité × kcal/100 g ÷ 100</div>
+    </div>
 
-const balance=totalIn(day)-totalOut(day);
+    <button class="button" id="addFoodBtn">Ajouter aliment à cette date</button>
+  </div>
 
-cal.innerHTML+=`
-<div class="day ${getClass(balance)}" onclick="select('${iso}')">${d}</div>`;
-}
-}
+  <div class="card">
+    <h2>Ajouter une activité</h2>
 
-function select(d){
-selected=d;
-render();
-}
+    <div class="field-group">
+      <label for="sportInput">Sport</label>
+      <input id="sportInput" type="text" list="sportSuggestions" placeholder="Ex. marche rapide" />
+      <datalist id="sportSuggestions"></datalist>
+    </div>
 
-function render(){
-renderCalendar();
+    <div class="field-group">
+      <label for="durationInput">Durée (minutes)</label>
+      <input id="durationInput" type="number" inputmode="decimal" placeholder="Ex. 45" />
+    </div>
 
-const day=getDay(selected);
+    <div class="field-group">
+      <label for="sportMetInput">Intensité (MET)</label>
+      <input id="sportMetInput" type="number" inputmode="decimal" step="0.1" placeholder="Ex. 4.3" />
+      <div class="hint">Remplissage automatique si l’activité est reconnue. Tu peux corriger la valeur.</div>
+    </div>
 
-const inC=totalIn(day);
-const outC=totalOut(day);
-const bal=inC-outC;
+    <div class="field-group">
+      <label for="sportCaloriesInput">Calories dépensées</label>
+      <input id="sportCaloriesInput" type="number" inputmode="decimal" readonly />
+      <div class="hint">Calcul automatique : MET × poids × durée en heures</div>
+      <div class="note" id="sportWeightNote"></div>
+    </div>
 
-document.getElementById("selectedDate").innerText=selected;
-document.getElementById("in").innerText="Calories : "+inC;
-document.getElementById("out").innerText="Sport : "+outC;
-document.getElementById("balance").innerText="Bilan : "+bal;
+    <button class="button" id="addSportBtn">Ajouter activité à cette date</button>
+  </div>
 
-localStorage.setItem(STORAGE,JSON.stringify(data));
-}
+  <div class="card">
+    <h2>Poids du jour</h2>
 
-function addFood(){
-const name=document.getElementById("food").value;
-const cal=Number(document.getElementById("cal").value);
-if(!name||!cal)return;
-getDay(selected).foods.push({name,cal});
-render();
-}
+    <div class="field-group">
+      <label for="weightInput">Poids (kg)</label>
+      <input id="weightInput" type="number" inputmode="decimal" step="0.1" placeholder="Ex. 74.8" />
+    </div>
 
-function addSport(){
-const name=document.getElementById("sport").value;
-const cal=Number(document.getElementById("calSport").value);
-if(!name||!cal)return;
-getDay(selected).sports.push({name,cal});
-render();
-}
+    <div class="button-row">
+      <button class="button" id="saveWeightBtn">Enregistrer</button>
+      <button class="button secondary" id="deleteWeightBtn">Supprimer</button>
+    </div>
+  </div>
 
-render();
-</script>
+  <div class="card">
+    <h2>Aliments du jour sélectionné</h2>
+    <div id="foodList" class="list"></div>
+  </div>
 
+  <div class="card">
+    <h2>Activités du jour sélectionné</h2>
+    <div id="sportList" class="list"></div>
+  </div>
+
+  <div class="card">
+    <h2>Historique</h2>
+    <div id="weightHistory" class="list"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "mon_regime_data_v3";
+
+    const FOOD_DB = {
+      "poulet roti": 190,
+      "blanc de poulet": 165,
+      "steak hache": 250,
+      "saumon": 208,
+      "thon": 132,
+      "oeuf": 155,
+      "riz cuit": 130,
+      "pates cuites": 158,
+      "pommes de terre roties": 135,
+      "carottes roties": 80,
+      "patates carottes roties": 110,
+      "pain": 265,
+      "fromage": 350,
+      "yaourt nature": 60,
+      "banane": 89,
+      "pomme": 52,
+      "orange": 47,
+      "salade": 15,
+      "avocat": 160,
+      "pizza": 270,
+      "soupe": 45
+    };
+
+    const SPORT_DB = {
+      "marche lente": 2.8,
+      "marche": 3.3,
+      "marche rapide": 4.3,
+      "randonnee": 6.0,
+      "velo tranquille": 4.0,
+      "velo": 6.0,
+      "course": 8.3,
+      "jogging": 7.0,
+      "natation": 6.0,
+      "musculation": 3.5,
+      "fitness": 5.0,
+      "football": 7.0,
+      "futsal": 8.0,
+      "tennis": 7.3,
+      "menage": 3.0,
+      "jardinage": 4.0
+    };
+
+    const appData = loadData();
+
+    const selectedDateLabel = document.getElementById("selectedDateLabel");
+    const monthLabel = document.getElementById("monthLabel");
+    const calendarGrid = document.getElementById("calendarGrid");
+
+    const foodInput = document.getElementById("foodInput");
+    const quantityInput = document.getElementById("quantityInput");
+    const foodCaloriesPer100Input = document.getElementById("foodCaloriesPer100Input");
+    const foodCaloriesInput = document.getElementById("foodCaloriesInput");
+
+    const sportInput = document.getElementById("sportInput");
+    const durationInput = document.getElementById("durationInput");
+    const sportMetInput = document.getElementById("sportMetInput");
+    const sportCaloriesInput = document.getElementById("sportCaloriesInput");
+    const sportWeightNote = document.getElementById("sportWeightNote");
+
+    const weightInput = document.getElementById("weightInput");
+
+    const caloriesInEl = document.getElementById("caloriesIn");
+    const caloriesOutEl = document.getElementById("caloriesOut");
+    const balanceEl = document.getElementById("balance");
+    const balanceCard = document.getElementById("balanceCard");
+    const weightDisplayEl = document.getElementById("weightDisplay");
+    const foodListEl = document.getElementById("foodList");
+    const sportListEl = document.getElementById("sportList");
+    const weightHistoryEl = document.getElementById("weightHistory");
+
+    const prevMonthBtn = document.getElementById("prevMonthBtn");
+    const nextMonthBtn = document.getElementById("nextMonthBtn");
+
+    let selectedISO = todayISO();
+    let calendarYear = new Date().getFullYear();
+    let calendarMonth = new Date().getMonth();
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { days: {} };
+
+        const parsed = JSON.parse(raw);
+        if (!parsed.days || typeof parsed.days !== "object") return { days: {} };
+
+        return parsed;
+      } catch {
+        return { days: {} };
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function todayISO() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function isoToFR(iso) {
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-");
+      return `${d}/${m}/${y}`;
+    }
+
+    function isoToPrettyFR(iso) {
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-");
+      const date = new Date(Number(y), Number(m) - 1, Number(d));
+      return date.toLocaleDateString("fr-FR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function isoToDateParts(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      return { y, m, d };
+    }
+
+    function ensureDay(isoDate) {
+      if (!appData.days[isoDate]) {
+        appData.days[isoDate] = {
+          foods: [],
+          sports: [],
+          weight: null
+        };
+      }
+      return appData.days[isoDate];
+    }
+
+    function totalFoodCalories(day) {
+      return day.foods.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+    }
+
+    function totalSportCalories(day) {
+      return day.sports.reduce((sum, item) => sum + Number(item.calories || 0), 0);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function round1(value) {
+      return Math.round(value * 10) / 10;
+    }
+
+    function fillDatalist(id, values) {
+      const el = document.getElementById(id);
+      el.innerHTML = values
+        .map(value => `<option value="${escapeHtml(value)}"></option>`)
+        .join("");
+    }
+
+    fillDatalist("foodSuggestions", Object.keys(FOOD_DB).sort((a, b) => a.localeCompare(b)));
+    fillDatalist("sportSuggestions", Object.keys(SPORT_DB).sort((a, b) => a.localeCompare(b)));
+
+    function getWeightForDate(iso) {
+      const day = ensureDay(iso);
+
+      if (day.weight !== null && day.weight !== "" && !Number.isNaN(Number(day.weight))) {
+        return Number(day.weight);
+      }
+
+      const dates = Object.keys(appData.days).sort((a, b) => b.localeCompare(a));
+      for (const d of dates) {
+        if (d <= iso) {
+          const w = appData.days[d]?.weight;
+          if (w !== null && w !== "" && !Number.isNaN(Number(w))) {
+            return Number(w);
+          }
+        }
+      }
+      return null;
+    }
+
+    function getBalanceForDay(iso) {
+      const existing = appData.days[iso];
+      if (!existing) return null;
+
+      const hasFood = Array.isArray(existing.foods) && existing.foods.length > 0;
+      const hasSport = Array.isArray(existing.sports) && existing.sports.length > 0;
+      const hasWeight = existing.weight !== null && existing.weight !== "" && existing.weight !== undefined;
+
+      if (!hasFood && !hasSport && !hasWeight) return null;
+
+      return round1(totalFoodCalories(existing) - totalSportCalories(existing));
+    }
+
+    function getDayColorClass(balance) {
+      if (balance === null) return "empty";
+      if (balance <= -1) return "good";
+      if (balance >= 0 && balance < 200) return "medium";
+      return "bad";
+    }
+
+    function getBalanceCardClass(balance) {
+      if (balance === null) return "balance-empty";
+      if (balance <= -1) return "balance-good";
+      if (balance >= 0 && balance < 200) return "balance-medium";
+      return "balance-bad";
+    }
+
+    function updateFoodCalculation() {
+      const foodKey = normalizeText(foodInput.value);
+
+      if (FOOD_DB[foodKey] !== undefined && foodCaloriesPer100Input.dataset.manual !== "1") {
+        foodCaloriesPer100Input.value = FOOD_DB[foodKey];
+      }
+
+      const grams = Number(quantityInput.value);
+      const per100 = Number(foodCaloriesPer100Input.value);
+
+      if (!Number.isNaN(grams) && grams > 0 && !Number.isNaN(per100) && per100 > 0) {
+        foodCaloriesInput.value = round1((grams * per100) / 100);
+      } else {
+        foodCaloriesInput.value = "";
+      }
+    }
+
+    function updateSportCalculation() {
+      const sportKey = normalizeText(sportInput.value);
+
+      if (SPORT_DB[sportKey] !== undefined && sportMetInput.dataset.manual !== "1") {
+        sportMetInput.value = SPORT_DB[sportKey];
+      }
+
+      const duration = Number(durationInput.value);
+      const met = Number(sportMetInput.value);
+      const weight = getWeightForDate(selectedISO);
+
+      if (weight) {
+        sportWeightNote.textContent = `Poids utilisé pour le calcul : ${weight} kg`;
+      } else {
+        sportWeightNote.textContent = "Enregistre un poids pour calculer automatiquement les calories du sport.";
+      }
+
+      if (!Number.isNaN(duration) && duration > 0 && !Number.isNaN(met) && met > 0 && weight) {
+        sportCaloriesInput.value = round1(met * weight * (duration / 60));
+      } else {
+        sportCaloriesInput.value = "";
+      }
+    }
+
+    function renderCalendar() {
+      monthLabel.textContent = new Date(calendarYear, calendarMonth, 1).toLocaleDateString("fr-FR", {
+        month: "long",
+        year: "numeric"
+      });
+
+      calendarGrid.innerHTML = "";
+
+      const firstDay = new Date(calendarYear, calendarMonth, 1);
+      const firstWeekday = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+      const today = todayISO();
+
+      for (let i = 0; i < firstWeekday; i++) {
+        const blank = document.createElement("div");
+        blank.className = "day-cell empty-slot";
+        calendarGrid.appendChild(blank);
+      }
+
+      for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+        const iso = `${calendarYear}-${String(calendarMonth + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
+        const balance = getBalanceForDay(iso);
+        const colorClass = getDayColorClass(balance);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `day-cell ${colorClass}`;
+        btn.textContent = dayNum;
+
+        if (iso === selectedISO) {
+          btn.classList.add("selected");
+        }
+
+        if (iso === today) {
+          btn.classList.add("today");
+        }
+
+        btn.addEventListener("click", () => {
+          selectedISO = iso;
+          render();
+        });
+
+        calendarGrid.appendChild(btn);
+      }
+    }
+
+    function render() {
+      const day = ensureDay(selectedISO);
+
+      const parts = isoToDateParts(selectedISO);
+      calendarYear = parts.y;
+      calendarMonth = parts.m - 1;
+
+      selectedDateLabel.textContent = isoToPrettyFR(selectedISO);
+
+      const caloriesIn = round1(totalFoodCalories(day));
+      const caloriesOut = round1(totalSportCalories(day));
+      const balance = round1(caloriesIn - caloriesOut);
+      const balanceState = (day.foods.length || day.sports.length || day.weight !== null) ? balance : null;
+
+      caloriesInEl.textContent = `${caloriesIn} kcal`;
+      caloriesOutEl.textContent = `${caloriesOut} kcal`;
+      balanceEl.textContent = `${balance} kcal`;
+      weightDisplayEl.textContent = day.weight ? `${day.weight} kg` : "—";
+
+      balanceCard.classList.remove("balance-good", "balance-medium", "balance-bad", "balance-empty");
+      balanceCard.classList.add(getBalanceCardClass(balanceState));
+
+      renderCalendar();
+      renderFoodList(day, selectedISO);
+      renderSportList(day, selectedISO);
+      renderHistory();
+
+      updateFoodCalculation();
+      updateSportCalculation();
+
+      saveData();
+    }
+
+    function renderFoodList(day, iso) {
+      if (!day.foods.length) {
+        foodListEl.innerHTML = `<div class="empty-box">Aucun aliment enregistré pour cette date.</div>`;
+        return;
+      }
+
+      foodListEl.innerHTML = day.foods.map((item, index) => `
+        <div class="list-item">
+          <div class="list-top">
+            <div>
+              <div class="item-title">${escapeHtml(item.name)}</div>
+              <div class="item-meta">
+                Quantité : ${escapeHtml(String(item.quantity))} g<br>
+                Base : ${escapeHtml(String(item.caloriesPer100))} kcal / 100 g
+              </div>
+            </div>
+            <div class="item-value">${escapeHtml(String(item.calories))} kcal</div>
+          </div>
+          <button class="delete-btn" onclick="deleteFood('${iso}', ${index})">Supprimer</button>
+        </div>
+      `).join("");
+    }
+
+    function renderSportList(day, iso) {
+      if (!day.sports.length) {
+        sportListEl.innerHTML = `<div class="empty-box">Aucune activité enregistrée pour cette date.</div>`;
+        return;
+      }
+
+      sportListEl.innerHTML = day.sports.map((item, index) => `
+        <div class="list-item">
+          <div class="list-top">
+            <div>
+              <div class="item-title">${escapeHtml(item.name)}</div>
+              <div class="item-meta">
+                Durée : ${escapeHtml(String(item.duration))} min<br>
+                Intensité : ${escapeHtml(String(item.met))} MET<br>
+                Poids utilisé : ${escapeHtml(String(item.weightUsed))} kg
+              </div>
+            </div>
+            <div class="item-value">${escapeHtml(String(item.calories))} kcal</div>
+          </div>
+          <button class="delete-btn" onclick="deleteSport('${iso}', ${index})">Supprimer</button>
+        </div>
+      `).join("");
+    }
+
+    function renderHistory() {
+      const entries = Object.entries(appData.days)
+        .filter(([_, day]) => {
+          const hasWeight = day.weight !== null && day.weight !== "" && day.weight !== undefined;
+          const hasFood = Array.isArray(day.foods) && day.foods.length > 0;
+          const hasSport = Array.isArray(day.sports) && day.sports.length > 0;
+          return hasWeight || hasFood || hasSport;
+        })
+        .sort((a, b) => b[0].localeCompare(a[0]));
+
+      if (!entries.length) {
+        weightHistoryEl.innerHTML = `<div class="empty-box">Aucun historique pour le moment.</div>`;
+        return;
+      }
+
+      weightHistoryEl.innerHTML = entries.map(([iso, day]) => {
+        const caloriesIn = round1(totalFoodCalories(day));
+        const caloriesOut = round1(totalSportCalories(day));
+        const balance = round1(caloriesIn - caloriesOut);
+
+        return `
+          <div class="list-item">
+            <div class="list-top">
+              <div>
+                <div class="item-title">${escapeHtml(isoToFR(iso))}</div>
+                <div class="item-meta">
+                  Poids : ${day.weight !== null && day.weight !== "" && day.weight !== undefined ? `${escapeHtml(String(day.weight))} kg` : "—"}<br>
+                  Calories consommées : ${caloriesIn} kcal<br>
+                  Calories dépensées : ${caloriesOut} kcal<br>
+                  Bilan net : ${balance} kcal
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function addFood() {
+      const day = ensureDay(selectedISO);
+
+      const name = foodInput.value.trim();
+      const quantity = Number(quantityInput.value);
+      const caloriesPer100 = Number(foodCaloriesPer100Input.value);
+      const calories = Number(foodCaloriesInput.value);
+
+      if (!name || Number.isNaN(quantity) || quantity <= 0 || Number.isNaN(caloriesPer100) || caloriesPer100 <= 0) {
+        alert("Remplis l’aliment, la quantité en grammes et les calories pour 100 g.");
+        return;
+      }
+
+      if (Number.isNaN(calories) || calories <= 0) {
+        alert("Les calories calculées sont invalides.");
+        return;
+      }
+
+      day.foods.push({
+        name,
+        quantity: round1(quantity),
+        caloriesPer100: round1(caloriesPer100),
+        calories: round1(calories)
+      });
+
+      foodInput.value = "";
+      quantityInput.value = "";
+      foodCaloriesPer100Input.value = "";
+      foodCaloriesInput.value = "";
+      foodCaloriesPer100Input.dataset.manual = "";
+
+      render();
+    }
+
+    function addSport() {
+      const day = ensureDay(selectedISO);
+      const weight = getWeightForDate(selectedISO);
+
+      const name = sportInput.value.trim();
+      const duration = Number(durationInput.value);
+      const met = Number(sportMetInput.value);
+      const calories = Number(sportCaloriesInput.value);
+
+      if (!weight) {
+        alert("Enregistre d’abord un poids pour calculer les calories du sport.");
+        return;
+      }
+
+      if (!name || Number.isNaN(duration) || duration <= 0 || Number.isNaN(met) || met <= 0) {
+        alert("Remplis l’activité, la durée et l’intensité.");
+        return;
+      }
+
+      if (Number.isNaN(calories) || calories <= 0) {
+        alert("Les calories calculées sont invalides.");
+        return;
+      }
+
+      day.sports.push({
+        name,
+        duration: round1(duration),
+        met: round1(met),
+        weightUsed: round1(weight),
+        calories: round1(calories)
+      });
+
+      sportInput.value = "";
+      durationInput.value = "";
+      sportMetInput.value = "";
+      sportCaloriesInput.value = "";
+      sportMetInput.dataset.manual = "";
+
+      render();
+    }
+
+    function saveWeight() {
+      const day = ensureDay(selectedISO);
+      const weight = Number(weightInput.value);
+
+      if (Number.isNaN(weight) || weight <= 0) {
+        alert("Entre un poids valide.");
+        return;
+      }
+
+      day.weight = round1(weight);
+      weightInput.value = "";
+      render();
+    }
+
+    function deleteWeight() {
+      const day = ensureDay(selectedISO);
+      day.weight = null;
+      render();
+    }
+
+    function deleteFood(iso, index) {
+      const day = ensureDay(iso);
+      day.foods.splice(index, 1);
+      render();
+    }
+
+    function deleteSport(iso, index) {
+      const day = ensureDay(iso);
+      day.sports.splice(index, 1);
+      render();
+    }
+
+    window.deleteFood = deleteFood;
+    window.deleteSport = deleteSport;
+
+    foodInput.addEventListener("input", updateFoodCalculation);
+    quantityInput.addEventListener("input", updateFoodCalculation);
+    foodCaloriesPer100Input.addEventListener("input", () => {
+      foodCaloriesPer100Input.dataset.manual = "1";
+      updateFoodCalculation();
+    });
+
+    sportInput.addEventListener("input", updateSportCalculation);
+    durationInput.addEventListener("input", updateSportCalculation);
+    sportMetInput.addEventListener("input", () => {
+      sportMetInput.dataset.manual = "1";
+      updateSportCalculation();
+    });
+
+    document.getElementById("addFoodBtn").addEventListener("click", addFood);
+    document.getElementById("addSportBtn").addEventListener("click", addSport);
+    document.getElementById("saveWeightBtn").addEventListener("click", saveWeight);
+    document.getElementById("deleteWeightBtn").addEventListener("click", deleteWeight);
+
+    prevMonthBtn.addEventListener("click", () => {
+      calendarMonth -= 1;
+      if (calendarMonth < 0) {
+        calendarMonth = 11;
+        calendarYear -= 1;
+      }
+      renderCalendar();
+    });
+
+    nextMonthBtn.addEventListener("click", () => {
+      calendarMonth += 1;
+      if (calendarMonth > 11) {
+        calendarMonth = 0;
+        calendarYear += 1;
+      }
+      renderCalendar();
+    });
+
+    render();
+  </script>
 </body>
 </html>
